@@ -3,398 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - Manajemen Barang</title>
+    <title>Sistem Informasi Permasalahan Barang</title>
+    <!-- Menggunakan Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Menggunakan Font Inter dari Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        .card-image { aspect-ratio: 16 / 9; object-fit: cover; }
-        
-        /* Styles for custom confirmation modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 50;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        body {
+            font-family: 'Inter', sans-serif;
         }
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
+        /* Custom scrollbar style */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .modal-content {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-            width: 90%;
-            max-width: 400px;
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
         }
-        .modal-overlay.visible .modal-content {
-            transform: scale(1);
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        #modal-img {
+            transition: transform 0.2s ease-in-out;
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="bg-gray-900 text-white antialiased">
 
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header Aplikasi -->
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Panel Admin - Manajemen Barang</h1>
-            <p class="text-gray-600 mt-2">Tambah, ubah, dan hapus data inventaris bermasalah.</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-cyan-400">Sistem Informasi Permasalahan Barang</h1>
+            <p class="text-gray-400 mt-2">Pilih mode Anda untuk memulai</p>
         </header>
 
-        <div id="status-message" class="hidden my-4 p-4 rounded-lg text-white"></div>
-        
-        <div id="admin-section" class="mb-8 p-6 bg-white rounded-xl shadow-lg transition-all duration-500">
-            <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Formulir Data Barang</h2>
-            <form id="item-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="md:col-span-2">
-                    <label for="kode-barang" class="block text-sm font-medium text-gray-700 mb-1">Kode Barang</label>
-                    <input type="text" id="kode-barang" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100" placeholder="Contoh: BRG-001">
-                </div>
-                <div>
-                    <label for="nama-barang" class="block text-sm font-medium text-gray-700 mb-1">Nama Barang</label>
-                    <input type="text" id="nama-barang" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100" placeholder="Contoh: Laptop Dell XPS 15">
-                </div>
-                <div>
-                    <label for="permasalahan" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Permasalahan</label>
-                    <textarea id="permasalahan" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100" placeholder="Contoh: Baterai cepat habis"></textarea>
-                </div>
-                <div class="md:col-span-2">
-                    <label for="gambar-barang" class="block text-sm font-medium text-gray-700 mb-1">Gambar Barang</label>
-                    <input type="file" id="gambar-barang" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50">
-                    <img id="image-preview" src="" alt="Pratinjau Gambar" class="hidden mt-4 h-32 rounded-lg"/>
-                </div>
-                <div class="md:col-span-2 flex items-center justify-end gap-4">
-                    <input type="hidden" id="item-id">
-                    <button type="button" id="cancel-button" class="hidden px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Batal</button>
-                    <button type="submit" id="submit-button" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed">Simpan Data</button>
-                </div>
-            </form>
+        <!-- Pemilih Mode (Admin/Operator) -->
+        <div id="role-switcher-container" class="max-w-md mx-auto mb-8">
+            <label for="role-switcher" class="block mb-2 text-sm font-medium text-gray-300">Pilih Mode:</label>
+            <select id="role-switcher" class="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5">
+                <option value="operator">Operator (Hanya Cari)</option>
+                <option value="admin">Admin (Kelola Data)</option>
+            </select>
         </div>
 
-        <div>
-            <h2 class="text-2xl font-semibold mb-4">Daftar Semua Barang Bermasalah</h2>
-            <div id="loader" class="flex justify-center my-8"><div class="loader"></div></div>
-            <div id="items-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            <p id="no-items-message" class="hidden text-center text-gray-500 mt-8">Belum ada data barang.</p>
-        </div>
+        <!-- Konten Utama -->
+        <main>
+            <!-- Tampilan untuk Operator -->
+            <div id="operator-view">
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg max-w-2xl mx-auto">
+                    <h2 class="text-2xl font-semibold mb-4 text-center">Pencarian Barang</h2>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" id="search-input" placeholder="Masukkan Kode Barang..." class="flex-grow bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <button id="search-button" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+                            Cari
+                        </button>
+                    </div>
+                </div>
+                <div id="search-results" class="mt-8 max-w-2xl mx-auto">
+                    <!-- Hasil pencarian akan ditampilkan di sini -->
+                </div>
+            </div>
 
+            <!-- Tampilan untuk Admin -->
+            <div id="admin-view" class="hidden">
+                <!-- Form untuk Tambah/Edit Barang -->
+                <div class="bg-gray-800 p-6 rounded-xl shadow-lg mb-8 max-w-4xl mx-auto">
+                    <h2 id="form-title" class="text-2xl font-semibold mb-6">Tambah Barang Baru</h2>
+                    <form id="item-form" class="space-y-4">
+                        <input type="hidden" id="edit-id">
+                        <div>
+                            <label for="kode" class="block mb-2 text-sm font-medium text-gray-300">Kode Barang</label>
+                            <input type="text" id="kode" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="nama" class="block mb-2 text-sm font-medium text-gray-300">Nama Barang</label>
+                            <input type="text" id="nama" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" required>
+                        </div>
+                        <div>
+                            <label for="permasalahan" class="block mb-2 text-sm font-medium text-gray-300">Permasalahan</label>
+                            <textarea id="permasalahan" rows="4" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5" required></textarea>
+                        </div>
+                        <div>
+                            <label for="gambar" class="block mb-2 text-sm font-medium text-gray-300">Gambar Barang</label>
+                            <div class="flex items-center gap-4">
+                                <input type="file" id="gambar" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-cyan-600 file:text-white hover:file:bg-cyan-700 cursor-pointer">
+                                <img id="image-preview" src="https://placehold.co/100x100/1f2937/9ca3af?text=Preview" alt="Image preview" class="w-20 h-20 object-cover rounded-lg bg-gray-700 flex-shrink-0">
+                            </div>
+                        </div>
+                        <div class="flex gap-4 pt-4">
+                            <button type="submit" class="w-full text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:outline-none focus:ring-cyan-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Simpan Barang</button>
+                            <button type="button" id="cancel-edit" class="w-full hidden text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Batal Edit</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Daftar Barang yang Sudah Ada -->
+                <div>
+                    <h2 class="text-2xl font-semibold mb-6 text-center">Daftar Semua Barang</h2>
+                    <div id="item-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Daftar barang akan ditampilkan di sini -->
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script type="module">
-        // Import modul Firebase yang diperlukan saja untuk mempercepat loading
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    <!-- Modal untuk Tampilan Gambar yang Diperbesar -->
+    <div id="image-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="relative max-w-4xl max-h-full">
+            <img id="modal-img" src="" alt="Gambar Diperbesar" class="max-w-full max-h-[80vh] object-contain rounded-lg">
+            <div id="zoom-controls" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-gray-900 bg-opacity-60 rounded-full p-2 flex items-center gap-2">
+                 <button id="zoom-out-btn" class="w-10 h-10 text-xl font-bold bg-cyan-600 rounded-full hover:bg-cyan-700 flex items-center justify-center">-</button>
+                 <button id="zoom-in-btn" class="w-10 h-10 text-xl font-bold bg-cyan-600 rounded-full hover:bg-cyan-700 flex items-center justify-center">+</button>
+            </div>
+            <button id="close-modal-btn" class="absolute -top-2 -right-2 w-10 h-10 text-2xl font-bold bg-red-600 rounded-full hover:bg-red-700 flex items-center justify-center leading-none">&times;</button>
+        </div>
+    </div>
 
-        // Konfigurasi Firebase
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Inisialisasi Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        setLogLevel('debug');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pemilihan Elemen DOM
+            const roleSwitcher = document.getElementById('role-switcher');
+            const roleSwitcherContainer = document.getElementById('role-switcher-container');
+            const adminView = document.getElementById('admin-view');
+            const operatorView = document.getElementById('operator-view');
+            
+            // Elemen Admin
+            const itemForm = document.getElementById('item-form');
+            const formTitle = document.getElementById('form-title');
+            const editIdInput = document.getElementById('edit-id');
+            const kodeInput = document.getElementById('kode');
+            const namaInput = document.getElementById('nama');
+            const permasalahanInput = document.getElementById('permasalahan');
+            const gambarInput = document.getElementById('gambar');
+            const imagePreview = document.getElementById('image-preview');
+            const itemList = document.getElementById('item-list');
+            const cancelEditBtn = document.getElementById('cancel-edit');
 
-        // Variabel global
-        let isEditing = false;
-        let currentItems = [];
+            // Elemen Operator
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            const searchResults = document.getElementById('search-results');
 
-        // Referensi ke koleksi Firestore
-        const itemsCollectionRef = collection(db, `/artifacts/${appId}/public/data/barang`);
+            // Elemen Modal Gambar
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const zoomInBtn = document.getElementById('zoom-in-btn');
+            const zoomOutBtn = document.getElementById('zoom-out-btn');
 
-        // Ambil elemen DOM
-        const itemForm = document.getElementById('item-form');
-        const submitButton = document.getElementById('submit-button');
-        const cancelButton = document.getElementById('cancel-button');
-        const itemsContainer = document.getElementById('items-container');
-        const loader = document.getElementById('loader');
-        const imageInput = document.getElementById('gambar-barang');
-        const imagePreview = document.getElementById('image-preview');
-        const noItemsMessage = document.getElementById('no-items-message');
-        const statusMessage = document.getElementById('status-message');
+            // State aplikasi
+            let items = [];
+            let editingId = null;
+            let currentScale = 1;
 
-        // Fungsi untuk menampilkan pesan status (sukses/error)
-        function showStatusMessage(message, isError = false) {
-            statusMessage.textContent = message;
-            statusMessage.className = `my-4 p-4 rounded-lg text-white ${isError ? 'bg-red-500' : 'bg-green-500'}`;
-            statusMessage.classList.remove('hidden');
-            setTimeout(() => { statusMessage.classList.add('hidden'); }, 4000);
-        }
+            // --- FUNGSI UTAMA ---
 
-        // Fungsi untuk mengaktifkan dan menonaktifkan form
-        const enableForm = () => {
-            itemForm.querySelectorAll('input, textarea, button').forEach(el => el.disabled = false);
-            submitButton.textContent = isEditing ? 'Update Data' : 'Simpan Data';
-        };
+            const isMobile = () => {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            };
 
-        const disableForm = () => {
-            itemForm.querySelectorAll('input, textarea, button').forEach(el => el.disabled = true);
-            submitButton.textContent = 'Menunggu Autentikasi...';
-        };
+            const loadItems = () => {
+                const storedItems = localStorage.getItem('items');
+                if (storedItems) {
+                    items = JSON.parse(storedItems);
+                }
+            };
 
-        // Event listener untuk pratinjau gambar
-        imageInput.addEventListener('change', () => {
-            const file = imageInput.files[0];
-            if (file) {
-                imagePreview.src = URL.createObjectURL(file);
-                imagePreview.classList.remove('hidden');
-            }
-        });
+            const saveItems = () => {
+                localStorage.setItem('items', JSON.stringify(items));
+            };
 
-        // Fungsi untuk menampilkan data barang (DIOPTIMALKAN)
-        const renderItems = (items) => {
-            itemsContainer.innerHTML = '';
-            const fragment = document.createDocumentFragment();
+            const renderItems = () => {
+                itemList.innerHTML = '';
+                if (items.length === 0) {
+                    itemList.innerHTML = `<p class="text-gray-400 md:col-span-2 lg:col-span-3 text-center">Belum ada data barang. Silakan tambahkan melalui form di atas.</p>`;
+                    return;
+                }
+                
+                const sortedItems = [...items].sort((a, b) => a.kode.localeCompare(b.kode, undefined, {numeric: true}));
 
-            noItemsMessage.classList.toggle('hidden', items.length > 0);
-            itemsContainer.classList.toggle('hidden', items.length === 0);
+                sortedItems.forEach(item => {
+                    const itemCard = `
+                        <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                            <img src="${item.gambar}" alt="${item.nama}" class="w-full h-48 object-cover">
+                            <div class="p-4 flex flex-col flex-grow">
+                                <h3 class="text-xl font-bold text-cyan-400">${item.nama}</h3>
+                                <p class="text-sm text-gray-400 mb-2">Kode: ${item.kode}</p>
+                                <p class="text-gray-300 flex-grow"><strong class="font-semibold">Permasalahan:</strong><br>${item.permasalahan.replace(/\n/g, '<br>')}</p>
+                                <div class="mt-4 flex gap-2 justify-end">
+                                    <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium py-1 px-3 rounded-md transition" data-id="${item.id}">Edit</button>
+                                    <button class="delete-btn bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-1 px-3 rounded-md transition" data-id="${item.id}">Hapus</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    itemList.innerHTML += itemCard;
+                });
+            };
+            
+            const renderSearchResults = (foundItems) => {
+                if (!foundItems || foundItems.length === 0) {
+                     searchResults.innerHTML = `<p class="text-center text-yellow-400 bg-gray-800 p-4 rounded-lg">Barang dengan kode tersebut tidak ditemukan.</p>`;
+                     return;
+                }
 
-            items.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300";
-                card.innerHTML = `
-                    <img class="w-full h-48 object-cover card-image" src="${item.gambar || 'https://placehold.co/600x400/e2e8f0/334155?text=Gambar'}" alt="${item.nama}" loading="lazy">
-                    <div class="p-6">
-                        <div class="uppercase tracking-wide text-sm text-indigo-600 font-semibold">${item.kode}</div>
-                        <h3 class="block mt-1 text-lg leading-tight font-medium text-black">${item.nama}</h3>
-                        <p class="mt-2 text-gray-600 font-semibold">Permasalahan:</p>
-                        <p class="text-gray-500 whitespace-pre-wrap">${item.permasalahan}</p>
-                        <div class="mt-4 flex justify-end gap-2">
-                            <button data-id="${item.id}" class="edit-btn text-sm px-4 py-1.5 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 flex items-center gap-1"><i data-lucide="edit" class="w-3 h-3"></i> Edit</button>
-                            <button data-id="${item.id}" class="delete-btn text-sm px-4 py-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Hapus</button>
+                const resultsHTML = foundItems.map(item => `
+                    <div class="bg-gray-800 rounded-xl shadow-lg overflow-hidden animate-fade-in mb-6">
+                        <img src="${item.gambar}" alt="${item.nama}" class="w-full h-64 object-cover cursor-pointer search-result-image">
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold text-cyan-400">${item.nama}</h3>
+                            <p class="text-md text-gray-400 mb-4">Kode: ${item.kode}</p>
+                            <p class="text-gray-200"><strong class="font-semibold text-lg">Permasalahan:</strong><br>${item.permasalahan.replace(/\n/g, '<br>')}</p>
                         </div>
                     </div>
-                `;
-                fragment.appendChild(card);
-            });
+                `).join('');
 
-            itemsContainer.appendChild(fragment);
-            lucide.createIcons();
-
-            document.querySelectorAll('.edit-btn').forEach(button => button.addEventListener('click', () => populateFormForEdit(button.dataset.id)));
-            document.querySelectorAll('.delete-btn').forEach(button => button.addEventListener('click', () => deleteItem(button.dataset.id)));
-        };
-
-        // Fungsi untuk mengambil data dari Firestore
-        const getItems = () => {
-            loader.classList.remove('hidden');
-            onSnapshot(itemsCollectionRef, (snapshot) => {
-                currentItems = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                renderItems(currentItems);
-                loader.classList.add('hidden');
-            }, (error) => {
-                console.error("Gagal mengambil data: ", error);
-                showStatusMessage("Gagal memuat data dari database.", true);
-                loader.classList.add('hidden');
-            });
-        };
-
-        // Fungsi untuk mereset form
-        const resetForm = () => {
-            itemForm.reset();
-            document.getElementById('item-id').value = '';
-            imagePreview.classList.add('hidden');
-            imagePreview.src = '';
-            isEditing = false;
-            submitButton.textContent = 'Simpan Data';
-            submitButton.classList.remove('bg-yellow-500');
-            submitButton.classList.add('bg-blue-600');
-            cancelButton.classList.add('hidden');
-            cancelButton.disabled = true;
-        };
-
-        // Fungsi untuk kompresi gambar
-        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
-                        } else {
-                            if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        resolve(dataUrl);
-                    };
-                    img.onerror = (error) => reject(error);
-                };
-                reader.onerror = (error) => reject(error);
-            });
-        }
-
-        // Event listener untuk submit form
-        itemForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            submitButton.disabled = true;
-            submitButton.textContent = 'Menyimpan...';
-
-            const kode = document.getElementById('kode-barang').value;
-            const nama = document.getElementById('nama-barang').value;
-            const permasalahan = document.getElementById('permasalahan').value;
-            const file = imageInput.files[0];
-            const id = document.getElementById('item-id').value;
-
-            if (!isEditing && currentItems.some(item => item.kode === kode)) {
-                showStatusMessage('Kode barang sudah ada.', true);
-                submitButton.disabled = false;
-                resetForm();
-                return;
-            }
-
-            const itemData = { kode, nama, permasalahan };
-
-            if (file) {
-                try {
-                    itemData.gambar = await compressImage(file);
-                } catch (error) {
-                    console.error("Gagal kompres gambar:", error);
-                    showStatusMessage("Terjadi masalah saat memproses gambar.", true);
-                }
-            }
-
-            try {
-                if (isEditing) {
-                    const docRef = doc(db, `/artifacts/${appId}/public/data/barang`, id);
-                    if (!file) {
-                        const oldItem = currentItems.find(item => item.id === id);
-                        itemData.gambar = oldItem ? oldItem.gambar : null;
-                    }
-                    await updateDoc(docRef, itemData);
-                    showStatusMessage('Data berhasil diperbarui!');
+                searchResults.innerHTML = resultsHTML;
+            };
+            
+            const switchView = (role) => {
+                if (role === 'admin') {
+                    adminView.classList.remove('hidden');
+                    operatorView.classList.add('hidden');
                 } else {
-                    await addDoc(itemsCollectionRef, itemData);
-                    showStatusMessage('Data berhasil ditambahkan!');
+                    adminView.classList.add('hidden');
+                    operatorView.classList.remove('hidden');
+                    searchInput.value = '';
+                    searchResults.innerHTML = '<p class="text-center text-gray-400">Masukkan kode barang di atas untuk memulai pencarian.</p>';
                 }
-                resetForm();
-            } catch (error) {
-                console.error("Firestore Error: ", error);
-                showStatusMessage('Gagal menyimpan data ke database.', true);
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = isEditing ? 'Update Data' : 'Simpan Data';
-            }
-        });
-
-        // Fungsi untuk mengisi form saat mode edit
-        const populateFormForEdit = (id) => {
-            const item = currentItems.find(i => i.id === id);
-            if (item) {
-                document.getElementById('item-id').value = item.id;
-                document.getElementById('kode-barang').value = item.kode;
-                document.getElementById('nama-barang').value = item.nama;
-                document.getElementById('permasalahan').value = item.permasalahan;
-                imagePreview.src = item.gambar || '';
-                imagePreview.classList.toggle('hidden', !item.gambar);
-                isEditing = true;
-                submitButton.textContent = 'Update Data';
-                submitButton.classList.remove('bg-blue-600');
-                submitButton.classList.add('bg-yellow-500');
-                cancelButton.classList.remove('hidden');
-                cancelButton.disabled = false;
-                window.scrollTo(0, 0);
-            }
-        };
-
-        cancelButton.addEventListener('click', resetForm);
-
-        // Fungsi untuk menghapus item dengan MODAL KUSTOM
-        const deleteItem = (id) => {
-            const modalOverlay = document.createElement('div');
-            modalOverlay.className = "modal-overlay";
+            };
             
-            modalOverlay.innerHTML = `
-                <div class="modal-content">
-                    <h3 class="text-lg font-semibold mb-2">Konfirmasi Hapus</h3>
-                    <p class="text-gray-600 mb-6">Anda yakin ingin menghapus data ini secara permanen?</p>
-                    <div class="flex justify-end gap-4">
-                        <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Batal</button>
-                        <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Ya, Hapus</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modalOverlay);
-            
-            setTimeout(() => modalOverlay.classList.add('visible'), 10);
+            const resetForm = () => {
+                itemForm.reset();
+                editingId = null;
+                editIdInput.value = '';
+                formTitle.textContent = 'Tambah Barang Baru';
+                cancelEditBtn.classList.add('hidden');
+                imagePreview.src = 'https://placehold.co/100x100/1f2937/9ca3af?text=Preview';
+            };
+
+            // --- FUNGSI MODAL GAMBAR ---
+            const openModal = (src) => {
+                currentScale = 1;
+                modalImg.src = src;
+                modalImg.style.transform = `scale(${currentScale})`;
+                modal.classList.remove('hidden');
+            };
 
             const closeModal = () => {
-                modalOverlay.classList.remove('visible');
-                setTimeout(() => document.body.removeChild(modalOverlay), 300);
+                modal.classList.add('hidden');
             };
 
-            modalOverlay.querySelector('#cancel-delete-btn').onclick = closeModal;
+            const zoomIn = () => {
+                currentScale += 0.2;
+                modalImg.style.transform = `scale(${currentScale})`;
+            };
+
+            const zoomOut = () => {
+                if (currentScale > 0.4) { // Batas zoom out minimal
+                    currentScale -= 0.2;
+                    modalImg.style.transform = `scale(${currentScale})`;
+                }
+            };
+
+            // --- EVENT LISTENERS ---
+
+            roleSwitcher.addEventListener('change', (e) => switchView(e.target.value));
             
-            modalOverlay.querySelector('#confirm-delete-btn').onclick = async () => {
-                try {
-                    await deleteDoc(doc(db, `/artifacts/${appId}/public/data/barang`, id));
-                    showStatusMessage('Data berhasil dihapus.');
-                } catch(error) {
-                    console.error("Gagal hapus data: ", error);
-                    showStatusMessage('Gagal menghapus data.', true);
-                } finally {
+            gambarInput.addEventListener('change', () => {
+                const file = gambarInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            itemForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const file = gambarInput.files[0];
+                const kode = kodeInput.value.trim();
+                const nama = namaInput.value.trim();
+                const permasalahan = permasalahanInput.value.trim();
+
+                const processSubmit = (imageData) => {
+                    if (editingId) {
+                        const itemIndex = items.findIndex(item => item.id === editingId);
+                        if (itemIndex > -1) {
+                            items[itemIndex].kode = kode;
+                            items[itemIndex].nama = nama;
+                            items[itemIndex].permasalahan = permasalahan;
+                            if (imageData) {
+                                items[itemIndex].gambar = imageData;
+                            }
+                        }
+                    } else {
+                        if (items.some(item => item.kode === kode)) {
+                            alert('Error: Kode Barang sudah ada. Harap gunakan kode yang unik.');
+                            return;
+                        }
+                        if (!imageData) {
+                            alert('Silakan pilih sebuah gambar untuk barang baru.');
+                            return;
+                        }
+                        const newItem = { id: Date.now().toString(), kode, nama, permasalahan, gambar: imageData };
+                        items.push(newItem);
+                    }
+                    saveItems();
+                    renderItems();
+                    resetForm();
+                };
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        processSubmit(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    processSubmit(null);
+                }
+            });
+
+            itemList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const idToDelete = e.target.dataset.id;
+                    if (confirm('Apakah Anda yakin ingin menghapus barang ini?')) {
+                        items = items.filter(item => item.id !== idToDelete);
+                        saveItems();
+                        renderItems();
+                        if (editingId === idToDelete) resetForm();
+                    }
+                }
+
+                if (e.target.classList.contains('edit-btn')) {
+                    const idToEdit = e.target.dataset.id;
+                    const itemToEdit = items.find(item => item.id === idToEdit);
+                    if (itemToEdit) {
+                        editingId = idToEdit;
+                        editIdInput.value = idToEdit;
+                        kodeInput.value = itemToEdit.kode;
+                        namaInput.value = itemToEdit.nama;
+                        permasalahanInput.value = itemToEdit.permasalahan;
+                        imagePreview.src = itemToEdit.gambar;
+                        gambarInput.value = ''; 
+                        formTitle.textContent = `Edit Barang: ${itemToEdit.nama}`;
+                        cancelEditBtn.classList.remove('hidden');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
+            });
+            
+            cancelEditBtn.addEventListener('click', resetForm);
+
+            const performSearch = () => {
+                const query = searchInput.value.trim();
+                if (!query) {
+                    searchResults.innerHTML = '<p class="text-center text-gray-400">Masukkan kode barang di atas untuk memulai pencarian.</p>';
+                    return;
+                }
+                const foundItems = items.filter(item => item.kode.startsWith(query));
+                renderSearchResults(foundItems);
+            };
+            
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+
+            // Event listener untuk klik gambar di hasil pencarian
+            searchResults.addEventListener('click', (e) => {
+                if (e.target.classList.contains('search-result-image')) {
+                    openModal(e.target.src);
+                }
+            });
+
+            // Event listener untuk kontrol modal
+            closeModalBtn.addEventListener('click', closeModal);
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            modal.addEventListener('click', (e) => {
+                if (e.target.id === 'image-modal') {
                     closeModal();
                 }
-            };
-        };
+            });
 
-        // Logika Autentikasi Firebase
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                getItems();
-                enableForm();
-            } else {
-                disableForm();
-                if (initialAuthToken) {
-                    signInWithCustomToken(auth, initialAuthToken).catch(err => {
-                        console.error("Gagal login dengan token:", err);
-                        showStatusMessage("Gagal autentikasi ke server.", true);
-                    });
+            // --- INISIALISASI ---
+            const initialize = () => {
+                loadItems();
+                renderItems();
+
+                if (isMobile()) {
+                    roleSwitcherContainer.classList.add('hidden'); // Sembunyikan dropdown di HP
+                    switchView('operator'); // Paksa ke mode operator
                 } else {
-                    signInAnonymously(auth).catch(err => {
-                        console.error("Gagal login anonim:", err);
-                         showStatusMessage("Gagal autentikasi ke server.", true);
-                    });
+                    // Perilaku normal di PC
+                    roleSwitcherContainer.classList.remove('hidden');
+                    switchView(roleSwitcher.value);
                 }
-            }
-        });
+            };
 
-        // Inisialisasi awal
-        disableForm();
-        lucide.createIcons();
+            initialize();
+        });
     </script>
 </body>
 </html>
